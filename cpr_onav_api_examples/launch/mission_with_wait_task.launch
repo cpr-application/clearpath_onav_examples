@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+   <node pkg="cpr_onav_api_examples" type="mission_with_wait_task" name="mission_with_wait_task" output="screen" respawn="false">
+   </node>
+</launch>
