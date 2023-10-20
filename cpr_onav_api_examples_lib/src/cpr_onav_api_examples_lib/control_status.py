@@ -13,7 +13,7 @@ CURRENT_MODE_TOPIC_NAME = "/control_selection/current_mode"
 class ControlStatusMonitor:
     """Create ROS subscribers for control status topics and save the results."""
 
-    def __init__(self, num_bms=0):
+    def __init__(self, msg_warn_period=10.0):
         """Subscribes for updates to the various control topics"""
 
         self._status_lock = Lock()
@@ -29,6 +29,11 @@ class ControlStatusMonitor:
                 ControlMode,
                 self._controlModeCallback)
 
+        self._no_new_msg_period = msg_warn_period
+        self._last_state_msg_time = rospy.get_time()
+        self._last_mode_msg_time = rospy.get_time()
+        self._timer = rospy.Timer(period=rospy.Duration(0.2), callback=self._msgChecker, oneshot=False)
+
     def _controlStateCallback(self, msg):
         """Updates the control state.
 
@@ -38,6 +43,7 @@ class ControlStatusMonitor:
           The updated control state
         """
 
+        self._last_state_msg_time = rospy.get_time()
         with self._status_lock:
             self._control_state = msg
 
@@ -50,6 +56,7 @@ class ControlStatusMonitor:
           The updated control mode
         """
 
+        self._last_mode_msg_time = rospy.get_time()
         with self._status_lock:
             self._current_mode = msg
 
@@ -88,6 +95,15 @@ class ControlStatusMonitor:
 
         with self._status_lock:
             return self._current_mode.mode
+
+    def _msgChecker(self, event):
+        """Check to see if messages have not been received within a certain amount of time"""
+
+        now = rospy.get_time()
+        if now - self._last_state_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new control state message received in the last %0.1f seconds", self._no_new_msg_period)
+        if now - self._last_mode_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new current mode message received in the last %0.1f seconds", self._no_new_msg_period)
 
     def report(self):
         """Logs all localization information."""

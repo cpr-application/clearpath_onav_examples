@@ -13,9 +13,10 @@ STATUS_TOPIC_NAME = "/localization/status"
 class LocalizationStatusMonitor:
     """Create ROS subscribers for localization status topics and save the results."""
 
-    def __init__(self, num_bms=0):
+    def __init__(self, store_data=False, msg_warn_period=10.0):
         """Subscribes for updates to the various localization topics"""
 
+        self._store_data = store_data
         self._status_lock = Lock()
 
         self._odom = Odometry()
@@ -30,6 +31,16 @@ class LocalizationStatusMonitor:
                 LocalizationStatus,
                 self._statusCallback)
 
+        self._no_new_msg_period = msg_warn_period
+        self._last_odom_msg_time = rospy.get_time()
+        self._last_status_msg_time = rospy.get_time()
+        self._timer = rospy.Timer(period=rospy.Duration(0.2), callback=self._msgChecker, oneshot=False)
+
+        self._odom_path = {
+            "x": [],
+            "y": [],
+        }
+
     def _odomCallback(self, msg):
         """Updates the odom state.
 
@@ -39,8 +50,12 @@ class LocalizationStatusMonitor:
           The updated odom state
         """
 
+        self._last_odom_msg_time = rospy.get_time()
         with self._status_lock:
             self._odom = msg
+            if self._store_data:
+                self._odom_path["x"].append(self._odom.pose.pose.position.x)
+                self._odom_path["y"].append(self._odom.pose.pose.position.y)
 
     def _statusCallback(self, msg):
         """Updates the GPS status state.
@@ -51,8 +66,18 @@ class LocalizationStatusMonitor:
           The updated GPS status state
         """
 
+        self._last_status_msg_time = rospy.get_time()
         with self._status_lock:
             self._status = msg
+
+    def _msgChecker(self, event):
+        """Check to see if messages have not been received within a certain amount of time"""
+
+        now = rospy.get_time()
+        if now - self._last_odom_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new odometry message received in the last %0.1f seconds", self._no_new_msg_period)
+        if now - self._last_status_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new status message received in the last %0.1f seconds", self._no_new_msg_period)
 
     def report(self):
         """Logs all localization information."""

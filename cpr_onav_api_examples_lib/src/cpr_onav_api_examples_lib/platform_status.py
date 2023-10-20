@@ -13,7 +13,7 @@ BMS_ROOT_TOPIC_NAME = "/onboard_systems/bms"
 class PlatformStatusMonitor:
     """Create ROS subscribers for Platform API topics and save the results."""
 
-    def __init__(self, num_bms=0):
+    def __init__(self, num_bms=0, msg_warn_period=10.0):
         """Subscribes for updates to the various platform topics
 
         Parameters
@@ -40,6 +40,11 @@ class PlatformStatusMonitor:
         else:
             self._bms_state = []
 
+        self._no_new_msg_period = msg_warn_period
+        self._last_wireless_msg_time = rospy.get_time()
+        self._last_bms_msg_time = rospy.get_time()
+        self._timer = rospy.Timer(period=rospy.Duration(0.2), callback=self._msgChecker)
+
     def _wirelessConnectionCallback(self, msg):
         """Updates the wireless connection state.
 
@@ -49,6 +54,7 @@ class PlatformStatusMonitor:
           The updated wireless connection state
         """
 
+        self._last_wireless_msg_time = rospy.get_time()
         with self._status_lock:
             self._wireless_connection = msg
 
@@ -64,8 +70,19 @@ class PlatformStatusMonitor:
           The index of the BMS for the msg (in the case of multi-BMS systems)
         """
 
+        self._last_bms_msg_time = rospy.get_time()
         with self._status_lock:
             self._bms_state[index] = msg
+
+
+    def _msgChecker(self, event):
+        """Check to see if messages have not been received within a certain amount of time"""
+
+        now = rospy.get_time()
+        if now - self._last_wireless_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new wireless message received in the last %0.1f seconds", self._no_new_msg_period)
+        if now - self._last_bms_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new bms messages received in the last %0.1f seconds", self._no_new_msg_period)
 
     def report(self):
         """Logs all status information."""

@@ -1,15 +1,13 @@
 import rospy
 from threading import Lock
-from clearpath_navigation_msgs.msg import CurrentGoalInfo
 from clearpath_navigation_msgs.msg import DistanceToGoal
 from clearpath_navigation_msgs.msg import MotionState
 from geometry_msgs.msg import PoseArray
 from clearpath_navigation_msgs.msg import Progress
 from clearpath_navigation_msgs.msg import NavigationState
+from geometry_msgs.msg import Twist
 
 
-# The name of the topic for the current goal info. This needs to match the CPR OutdoorNav API.
-CURRENT_GOAL_INFO_TOPIC_NAME = "/navigation/current_goal_info"
 # The name of the topic for the distance to goal. This needs to match the CPR OutdoorNav API.
 DISTANCE_TO_GOAL_TOPIC_NAME = "/navigation/distance_to_goal"
 # The name of the topic for the motion state. This needs to match the CPR OutdoorNav API.
@@ -18,23 +16,30 @@ MOTION_STATE_TOPIC_NAME = "/navigation/motion_state"
 NAV_PATH_TOPIC_NAME = "/navigation/path"
 # The name of the topic for the navigation progress. This needs to match the CPR OutdoorNav API.
 NAV_PROGRESS_TOPIC_NAME = "/navigation/progress"
-# The name of the topic for the navigation state. This needs to match the CPR OutdoorNav API.
-NAV_STATE_TOPIC_NAME = "/navigation/state"
+# The name of the topic for the navigation commanded velocity. This needs to match the CPR OutdoorNav API.
+NAV_CMD_VEL_TOPIC_NAME = "/navigation/cmd_vel"
+# The name of the topic for the navigation commanded velocity. This needs to match the CPR OutdoorNav API.
+PLATFORM_VEL_TOPIC_NAME = "/platform/cmd_vel"
 
 
 class NavigationStatusMonitor:
     """Create ROS subscribers for navigation status topics and save the results."""
 
-    def __init__(self, num_bms=0):
+    def __init__(self, store_data=False, msg_warn_period=10.0):
         """Subscribes for updates to the various navigation topics"""
 
+        self._store_data = store_data
         self._status_lock = Lock()
 
-        self._current_goal_info = CurrentGoalInfo()
-        self._current_goal_info_sub = rospy.Subscriber(
-                CURRENT_GOAL_INFO_TOPIC_NAME,
-                CurrentGoalInfo,
-                self._currentGoalInfoCallback)
+        self._last_platform_vel = Twist()
+        self._platform_vel_sub = rospy.Subscriber(
+                PLATFORM_VEL_TOPIC_NAME,
+                Twist, self._platformVelCallback)
+
+        self._last_nav_cmd_vel = Twist()
+        self._nav_vel_sub = rospy.Subscriber(
+                NAV_CMD_VEL_TOPIC_NAME,
+                Twist, self._navVelCallback)
 
         self._distance_to_goal = DistanceToGoal()
         self._distance_to_goal_sub = rospy.Subscriber(
@@ -48,6 +53,7 @@ class NavigationStatusMonitor:
                 MotionState,
                 self._motionStateCallback)
 
+        self._new_path_received = False
         self._planned_path = PoseArray()
         self._planned_path_sub = rospy.Subscriber(
                 NAV_PATH_TOPIC_NAME,
@@ -60,23 +66,59 @@ class NavigationStatusMonitor:
                 Progress,
                 self._progressCallback)
 
-        self._navigation_state = NavigationState()
-        self._navigation_state_sub = rospy.Subscriber(
-                NAV_STATE_TOPIC_NAME,
-                NavigationState,
-                self._navigationStateCallback)
+        self._no_new_msg_period = msg_warn_period
+        self._last_platform_vel_msg_time = rospy.get_time()
+        self._last_nav_cmd_vel_msg_time = rospy.get_time()
+        self._last_distance_msg_time = rospy.get_time()
+        self._last_motion_state_msg_time = rospy.get_time()
+        self._last_progress_msg_time = rospy.get_time()
+        self._timer = rospy.Timer(period=rospy.Duration(0.2), callback=self._msgChecker, oneshot=False)
 
-    def _currentGoalInfoCallback(self, msg):
-        """Updates the current goal info state.
+        self._time = []
+        self._platform_vel = {
+            "lin_x": [],
+            "ang_z": [],
+        }
+        self._nav_cmd_vel = {
+            "lin_x": [],
+            "ang_z": [],
+        }
+        self._nav_path = {
+            "x": [],
+            "y": [],
+        }
+
+    def _platformVelCallback(self, msg):
+        """Updates the platform velocity.
 
         Parameters
         ----------
-        msg : clearpath_navigation_msgs.msg.CurrentGoalInfo
-          The updated current goal info state
+        msg : geometry_msgs.msg.Twist
+          The updated platform velocity
         """
 
+        self._last_platform_vel_msg_time = rospy.get_time()
         with self._status_lock:
-            self._current_goal_info = msg
+            self._last_platform_vel = msg
+
+    def _navVelCallback(self, msg):
+        """Updates the navigation commanded velocity.
+
+        Parameters
+        ----------
+        msg : geometry_msgs.msg.Twist
+          The updated navigation commanded velocity
+        """
+
+        self._last_nav_cmd_vel_msg_time = rospy.get_time()
+        with self._status_lock:
+            self._last_nav_cmd_vel = msg
+            if self._store_data:
+                self._time.append(rospy.get_time())
+                self._platform_vel["lin_x"].append(self._last_platform_vel.linear.x)
+                self._platform_vel["ang_z"].append(self._last_platform_vel.angular.z)
+                self._nav_cmd_vel["lin_x"].append(self._last_nav_cmd_vel.linear.x)
+                self._nav_cmd_vel["ang_z"].append(self._last_nav_cmd_vel.angular.z)
 
     def _distanceToGoalCallback(self, msg):
         """Updates the distance to goal state.
@@ -87,6 +129,7 @@ class NavigationStatusMonitor:
           The updated distance to goal state
         """
 
+        self._last_distance_msg_time = rospy.get_time()
         with self._status_lock:
             self._distance_to_goal = msg
 
@@ -99,6 +142,7 @@ class NavigationStatusMonitor:
           The updated motion state
         """
 
+        self._last_motion_state_msg_time = rospy.get_time()
         with self._status_lock:
             self._motion_state = msg
 
@@ -111,8 +155,13 @@ class NavigationStatusMonitor:
           The updated planned path state
         """
 
+        self._new_path_received = True
         with self._status_lock:
             self._planned_path = msg
+            if self._store_data:
+                for i in range(len(self._planned_path.poses)):
+                    self._nav_path["x"].append(self._planned_path.poses[i].position.x)
+                    self._nav_path["y"].append(self._planned_path.poses[i].position.y)
 
     def _progressCallback(self, msg):
         """Updates the progress state.
@@ -123,30 +172,30 @@ class NavigationStatusMonitor:
           The updated progress state
         """
 
+        self._last_progress_msg_time = rospy.get_time()
         with self._status_lock:
             self._progress = msg
 
-    def _navigationStateCallback(self, msg):
-        """Updates the navigation state.
+    def _msgChecker(self, event):
+        """Check to see if messages have not been received within a certain amount of time"""
 
-        Parameters
-        ----------
-        msg : clearpath_navigation_msgs.msg.NavigationState
-          The updated navigation state
-        """
-
-        with self._status_lock:
-            self._navigation_state = msg
+        now = rospy.get_time()
+        if now - self._last_platform_vel_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new platform velocity message received in the last %0.1f seconds", self._no_new_msg_period)
+        if now - self._last_nav_cmd_vel_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new navigation command velocity message received in the last %0.1f seconds", self._no_new_msg_period)
+        if now - self._last_distance_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new distance to goal message received in the last %0.1f seconds", self._no_new_msg_period)
+        if now - self._last_motion_state_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new motion state received in the last %0.1f seconds", self._no_new_msg_period)
+        if now - self._last_progress_msg_time > self._no_new_msg_period:
+            rospy.logwarn_throttle(self._no_new_msg_period, "No new progress message received in the last %0.1f seconds", self._no_new_msg_period)
 
     def report(self):
         """Logs all localization information."""
 
         with self._status_lock:
             rospy.loginfo("  Navigation:")
-            rospy.loginfo("    Current Goal: ID: %s, Endpoint (%f, %f)" % (
-                    self._current_goal_info.goal_id,
-                    self._current_goal_info.goal.latitude,
-                    self._current_goal_info.goal.longitude))
             rospy.loginfo("    Distance to Goal: Euclidean: %f, Path: %f" % (
                     self._distance_to_goal.euclidean,
                     self._distance_to_goal.path))
@@ -154,14 +203,13 @@ class NavigationStatusMonitor:
                     self._motion_state.motion,
                     self._motion_state.indicator,
                     self._motion_state.direction))
-            rospy.loginfo("    Planned Path:")
-            for pose in self._planned_path.poses:
-                rospy.loginfo("      (%f, %f, %f)" % (
-                    pose.position.x, pose.position.y, pose.position.z))
+            if self._new_path_received:
+                rospy.loginfo("    Planned Path:")
+                for pose in self._planned_path.poses:
+                    rospy.loginfo("      (%f, %f)" % (
+                        pose.position.x, pose.position.y))
+                self._new_path_received = False
             rospy.loginfo("    Progress: Path: %f, Goal: %f, Mission: %f" % (
                     self._progress.path_progress,
                     self._progress.goal_progress,
                     self._progress.mission_progress))
-            rospy.loginfo("    State:")
-            for state in self._navigation_state.states:
-                rospy.loginfo("      %d" % state)

@@ -1,11 +1,13 @@
 import rospy
 import actionlib
 import clearpath_localization_msgs.msg
+from sensor_msgs.msg import NavSatFix
 
 
 # The name of the action server for surveying.
 # This needs to match the CPR OutdoorNav API.
 SURVEY_ACTION_NAME = 'localization/survey'
+SURVEY_PROPERTIES_TOPIC_NAME = SURVEY_ACTION_NAME + '/properties'
 
 
 class LocalizationSurvey:
@@ -33,6 +35,7 @@ class LocalizationSurvey:
 
         self._survey_complete = False
         self._survey_success = False
+        self._base_location = NavSatFix()
         self._survey_progress_callback = progress_callback
         self._survey_done_callback = done_callback
         self._client = actionlib.SimpleActionClient(
@@ -44,7 +47,7 @@ class LocalizationSurvey:
         Forwards the callback to the survey feedback callback (if provided).
         """
 
-        rospy.logdebug("Surveying is %f percent complete" % (feedback.percent_complete))
+        rospy.loginfo("Surveying is %0.3f percent complete" % (feedback.percent_complete))
         if self._survey_progress_callback is not None:
             self._survey_progress_callback(feedback)
 
@@ -59,18 +62,23 @@ class LocalizationSurvey:
         else:
             self._survey_success = False
         self._survey_complete = True
-        rospy.logdebug("Surveying is complete. Success: %s" % (self._survey_success))
+        rospy.loginfo("Surveying is complete. Success: %s" % (self._survey_success))
+        try:
+            base_properties_msg = rospy.wait_for_message(SURVEY_PROPERTIES_TOPIC_NAME, clearpath_localization_msgs.msg.SurveyProperties, 2.0)
+            self._base_location = base_properties_msg.base_location
+        except rospy.ROSException as e:
+            rospy.logerr("Failed to get survey properties message.")
         if self._survey_done_callback is not None:
             self._survey_done_callback(goal_state, result)
 
-    def startSurvey(self, number_of_desired_fixes=2000):
+    def startSurvey(self, num_of_desired_fixes=2000):
         """Begin the survey.
 
-        Using the default value, this process will take approximately 10 minutes.
+        Using the default value, this process will take approximately 5 minutes.
 
         Parameters
         ----------
-        number_of_desired_fixes : int, optional
+        num_of_desired_fixes : int, optional
             The number of sample to take during the surveying process (default is 2000)
         """
 
@@ -82,9 +90,9 @@ class LocalizationSurvey:
             if not self._client.wait_for_server(timeout=rospy.Duration(2.0)):
                 rospy.logerr("Failed to connect to server")
                 return False
-            goal = {number_of_desired_fixes: number_of_desired_fixes}
-            self._client.send_goal(goal,
-                                   feedback_cb=self._surveyFeedbackCallback,
+            goal = clearpath_localization_msgs.msg.SurveyBaseStationActionGoal
+            goal.number_of_desired_fixes = num_of_desired_fixes
+            self._client.send_goal(goal, feedback_cb=self._surveyFeedbackCallback,
                                    done_cb=self._surveyDoneCallback)
         except rospy.ROSInterruptException:
             rospy.logerr("localization/survey server is not available; exception detected")
