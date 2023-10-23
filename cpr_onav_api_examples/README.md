@@ -1,6 +1,9 @@
 # OutdoorNav API Examples
 
-These examples outline how to use the API to define and execute missions.
+
+<img src="cpr_onav_api_examples/images/clearpath_robotics_transparent_dark.png" alt="Clearpath Logo" width="50%" />&nbsp;
+
+Welcome to the Clearpath Robotics OutdoorNav OutdoorNav examples repository! These examples outline how to use the API to define and execute missions.
 
 ## Building the Examples
 
@@ -13,7 +16,7 @@ mkdir -p ~/outdoornav_ws/src
 cd ~/outdoornav_ws
 catkin_init_workspace src
 cd src
-git clone https://github.com/clearpathrobotics/CPR-OutdoorNav.git cpr_outdoornav
+git clone https://github.com/cpr-application/cpr_onav_examples.git cpr_outdoornav
 cd ~/outdoornav_ws
 rosdep install -y --from-paths src --ignore-src
 catkin build
@@ -62,12 +65,12 @@ similar to the following sequence of images. Note how the robot navigates betwee
 two rows of solar panels and stops at two specific panels (one near the midpoint
 and one near the end of the row) to allow an inspection to be performed.
 
-![inspection_mission_1 Ready to start](../../images/inspection_mission_1/api/inspection_mission_demo_step1.png?raw=true)
-![inspection_mission_1 Toward mission start](../../images/inspection_mission_1/api/inspection_mission_demo_step2.png?raw=true)
-![inspection_mission_1 Toward panel 26](../../images/inspection_mission_1/api/inspection_mission_demo_step3.png?raw=true)
-![inspection_mission_1 Toward panel 21](../../images/inspection_mission_1/api/inspection_mission_demo_step4.png?raw=true)
-![inspection_mission_1 Toward end](../../images/inspection_mission_1/api/inspection_mission_demo_step5.png?raw=true)
-![inspection_mission_1 End](../../images/inspection_mission_1/api/inspection_mission_demo_step6.png?raw=true)
+![inspection_mission_1 Ready to start](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step1.png?raw=true)
+![inspection_mission_1 Toward mission start](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step2.png?raw=true)
+![inspection_mission_1 Toward panel 26](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step3.png?raw=true)
+![inspection_mission_1 Toward panel 21](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step4.png?raw=true)
+![inspection_mission_1 Toward end](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step5.png?raw=true)
+![inspection_mission_1 End](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step6.png?raw=true)
 
 ## Running an Area Coverage Example
 
@@ -101,7 +104,7 @@ Scanner reading 92 at Lat: 50.109458 Lon: -97.319889
 If the UI is open while the mission is running, you should see something
 similar to the following images.
 
-![simple_area_coverage Area Coverage](../../images/simple_area_coverage/api/simple_area_coverage_1.png?raw=true)
+![simple_area_coverage Area Coverage](cpr_onav_api_examples/images/simple_area_coverage/api/simple_area_coverage_1.png?raw=true)
 
 ## Reading and Writing Mission Configuration
 

@@ -10,5 +10,5 @@ rosbag_topics:
   - '/piksi_heading/(.*)'
 
 mission_files:
-  - '/home/administrator/outdoornav_ws/src/cpr_outdoornav/src/cpr_onav_api_examples/config/missions/loop_ccw.yaml'
-  - '/home/administrator/outdoornav_ws/src/cpr_outdoornav/src/cpr_onav_api_examples/config/missions/loop_cw.yaml'
+  - '/home/administrator/outdoornav_ws/src/cpr_outdoornav/cpr_onav_api_examples/config/missions/loop_ccw.yaml'
+  - '/home/administrator/outdoornav_ws/src/cpr_outdoornav/cpr_onav_api_examples/config/missions/loop_cw.yaml'
