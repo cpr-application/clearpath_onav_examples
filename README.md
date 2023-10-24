@@ -1,7 +1,7 @@
 # OutdoorNav API Examples
 
 
-<img src="cpr_onav_api_examples/images/clearpath_robotics_transparent_dark.png" alt="Clearpath Logo" width="50%" />&nbsp;
+<img src="clearpath_onav_api_examples/images/clearpath_robotics_transparent_dark.png" alt="Clearpath Logo" width="50%" />&nbsp;
 
 Welcome to the Clearpath Robotics OutdoorNav OutdoorNav examples repository! These examples outline how to use the API to define and execute missions.
 
@@ -16,7 +16,7 @@ mkdir -p ~/outdoornav_ws/src
 cd ~/outdoornav_ws
 catkin_init_workspace src
 cd src
-git clone https://github.com/cpr-application/cpr_onav_examples.git cpr_outdoornav
+git clone https://github.com/cpr-application/clearpath_onav_examples.git cpr_outdoornav
 cd ~/outdoornav_ws
 rosdep install -y --from-paths src --ignore-src
 catkin build
@@ -33,7 +33,7 @@ have the remote computer point to the ROS Master on the target robot.
 
 ```
 source ~/outdoornav_ws/devel/setup.bash
-rosrun cpr_onav_api_examples simple_mission_1
+rosrun clearpath_onav_api_examples simple_mission_1
 ```
 
 ## Running an Inspection Example
@@ -45,7 +45,7 @@ along the route.
 
 ```
 source ~/outdoornav_ws/devel/setup.bash
-rosrun cpr_onav_api_examples inspection_mission_1
+rosrun clearpath_onav_api_examples inspection_mission_1
 ```
 
 The time to run the mission will depend on the speed of your simulation,
@@ -54,7 +54,7 @@ the compute power of the node running the simulation.
 The console output should be similar to:
 
 ```
-$ rosrun cpr_onav_api_examples inspection_mission_1
+$ rosrun clearpath_onav_api_examples inspection_mission_1
 [INFO] [1674669519.255228, 234.054000]: Solar Panel ID: 26.000000 Status: Operating normally
 [INFO] [1674669708.237271, 272.053000]: Solar Panel ID: 21.000000 Status: Fault detected
 Mission completed successfully
@@ -65,12 +65,12 @@ similar to the following sequence of images. Note how the robot navigates betwee
 two rows of solar panels and stops at two specific panels (one near the midpoint
 and one near the end of the row) to allow an inspection to be performed.
 
-![inspection_mission_1 Ready to start](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step1.png?raw=true)
-![inspection_mission_1 Toward mission start](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step2.png?raw=true)
-![inspection_mission_1 Toward panel 26](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step3.png?raw=true)
-![inspection_mission_1 Toward panel 21](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step4.png?raw=true)
-![inspection_mission_1 Toward end](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step5.png?raw=true)
-![inspection_mission_1 End](cpr_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step6.png?raw=true)
+![inspection_mission_1 Ready to start](clearpath_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step1.png?raw=true)
+![inspection_mission_1 Toward mission start](clearpath_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step2.png?raw=true)
+![inspection_mission_1 Toward panel 26](clearpath_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step3.png?raw=true)
+![inspection_mission_1 Toward panel 21](clearpath_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step4.png?raw=true)
+![inspection_mission_1 Toward end](clearpath_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step5.png?raw=true)
+![inspection_mission_1 End](clearpath_onav_api_examples/images/inspection_mission_1/api/inspection_mission_demo_step6.png?raw=true)
 
 ## Running an Area Coverage Example
 
@@ -81,7 +81,7 @@ the simulated scanner provides coverage of the entire area.
 
 ```
 source ~/outdoornav_ws/devel/setup.bash
-rosrun cpr_onav_api_examples simple_area_coverage
+rosrun clearpath_onav_api_examples simple_area_coverage
 ```
 
 The time to run the mission will depend on the speed of your simulation,
@@ -90,7 +90,7 @@ the compute power of the node running the simulation.
 The console output should be similar to:
 
 ```
-$ rosrun cpr_onav_api_examples simple_area_coverage
+$ rosrun clearpath_onav_api_examples simple_area_coverage
 [INFO] [1675994738.888331, 45.537000]: Computing waypoints for (-65.134179, -0.264033), (-65.134179, 14.735967), (-25.134179, 14.735967), (-25.134179, -0.264033)
 [INFO] [1675996427.370797, 260.487000]: Adding result: 99 at (50.109474, -97.319886)
 [INFO] [1675996477.491238, 271.487000]: Adding result: 92 at (50.109458, -97.319889)
@@ -104,7 +104,7 @@ Scanner reading 92 at Lat: 50.109458 Lon: -97.319889
 If the UI is open while the mission is running, you should see something
 similar to the following images.
 
-![simple_area_coverage Area Coverage](cpr_onav_api_examples/images/simple_area_coverage/api/simple_area_coverage_1.png?raw=true)
+![simple_area_coverage Area Coverage](clearpath_onav_api_examples/images/simple_area_coverage/api/simple_area_coverage_1.png?raw=true)
 
 ## Reading and Writing Mission Configuration
 
