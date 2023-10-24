@@ -7,13 +7,6 @@ Welcome to the Clearpath Robotics OutdoorNav OutdoorNav examples repository! The
 
 ## Building the Examples
 
-
-First install the required dependencies,
-
-```
-sudo pip3 install utm
-```
-
 Use the steps below to download and build the examples. This can be performed
 directly on the target robot or on a separate computer with ROS Noetic
 installed.
