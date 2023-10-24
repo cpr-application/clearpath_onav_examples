@@ -1,5 +1,6 @@
 import rospy
-import utm
+from pyproj import Proj
+import math
 from clearpath_onav_api_examples_lib.coordinate_utm import CoordinateUtm
 from clearpath_onav_api_examples_lib.coordinate_xy import CoordinateXY
 
@@ -56,8 +57,10 @@ class CoordinateLatLon:
             coordinate in UTM format
         """
 
-        u = utm.from_latlon(self.lat, self.lon)
-        return CoordinateUtm(u[1], u[0], u[2], u[3])
+        utm_zone_number, utm_zone_letter = self.getUtmZone()
+        projector = Proj(proj='utm', zone=utm_zone_number, ellps='WGS84')
+        easting,northing = projector(self.lon, self.lat)
+        return CoordinateUtm(northing, easting, utm_zone_number, utm_zone_letter)
 
     @staticmethod
     def fromUtm(coordinate_utm):
@@ -69,9 +72,9 @@ class CoordinateLatLon:
             A coordinate in latitude/longitude format.
         """
 
-        coord_latlon = utm.to_latlon(coordinate_utm.getEast(), coordinate_utm.getNorth(),
-                                     coordinate_utm.getZoneNumber(), coordinate_utm.getZoneLetter())
-        return CoordinateLatLon(coord_latlon[0], coord_latlon[1])
+        projector = Proj(proj='utm', zone=coordinate_utm.getZoneNumber(), ellps='WGS84')
+        coord_latlon = projector(coordinate_utm.getEast(), coordinate_utm.getNorth(), inverse=True)
+        return CoordinateLatLon(coord_latlon[1], coord_latlon[0])
 
     def toXY(self, origin):
         """Get the X and Y offsets of the coordinate from the specified origin
@@ -92,7 +95,7 @@ class CoordinateLatLon:
         # If the zones don't match, return None
         if (
             coord_utm.getZoneNumber() != origin_utm.getZoneNumber() or
-            coord_utm.getZoneLetter() != origin_utm.getZoneLetter()
+            coord_utm.getZoneletter() != origin_utm.getZoneletter()
         ):
             print(coord_utm.getZoneNumber())
             print(origin_utm.getZoneNumber())
@@ -153,3 +156,47 @@ class CoordinateLatLon:
         except KeyError as e:
             rospy.logerr('Unable to parse yaml for coordinate: %s' % e)
         return None
+
+    def getUtmZone(self):
+        zone = math.floor((self.lon/6)+31)
+        if (self.lat < -72):
+            letter='C'
+        elif (self.lat < -64):
+            letter='D'
+        elif (self.lat < -56):
+            letter='E'
+        elif (self.lat < -48):
+            letter='F'
+        elif (self.lat < -40):
+            letter='G'
+        elif (self.lat < -32):
+            letter='H'
+        elif (self.lat < -24):
+            letter='J'
+        elif (self.lat < -16):
+            letter='K'
+        elif (self.lat < -8):
+            letter='L'
+        elif (self.lat < 0):
+            letter='M'
+        elif (self.lat < 8):
+            letter='N'
+        elif (self.lat < 16):
+            letter='P'
+        elif (self.lat < 24):
+            letter='Q'
+        elif (self.lat < 32):
+            letter='R'
+        elif (self.lat < 40):
+            letter='S'
+        elif (self.lat < 48):
+            letter='T'
+        elif (self.lat < 56):
+            letter='U'
+        elif (self.lat < 64):
+            letter='V'
+        elif (self.lat < 72):
+            letter='W'
+        else:
+            letter='X'
+        return zone, letter
