@@ -6,10 +6,7 @@ class Task:
     """A single Task (part of a Waypoint).
 
     Contains a name, uuid, action_server_name, version, arrays of floats
-    and strings at the point, and various other optional parameters related
-    to the specifics at the waypoint.
-
-    A series of waypoints can be grouped in sequence to build a larger mission.
+    and strings related to the specific Task.
     """
 
     def __init__(self, name, uuid, action_server_name, version="", floats=[], strings=[]):
@@ -18,10 +15,10 @@ class Task:
         Parameters
         ----------
         name : str
-            The name or ID of the goal, used for tracking/reporting
+            The name or ID of the task, used for tracking/reporting
 
         uuid : str
-            Unique UUID string for the waypoint
+            Unique UUID string for the task
 
         action_server_name : str
             The ROS action that this task executes
