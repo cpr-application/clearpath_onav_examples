@@ -1,6 +1,7 @@
 import rospy
 import actionlib
 import clearpath_navigation_msgs.msg
+from clearpath_onav_api_examples_lib.task import Task
 from clearpath_onav_api_examples_lib.waypoint import Waypoint
 
 
@@ -12,8 +13,8 @@ MISSION_ACTION_NAME = 'mission'
 class Mission:
     """A sequence of waypoints with optional tasks."""
 
-    def __init__(self, name, uuid, waypoints, onav_config="",
-                 progress_callback=None, done_callback=None):
+    def __init__(self, name, uuid, waypoints, on_start_tasks, on_stop_tasks,
+                 onav_config="", progress_callback=None, done_callback=None):
         """Builds up the data structure containing the details of the mission.
 
         Parameters
@@ -26,6 +27,13 @@ class Mission:
 
         waypoints : Waypoint[]
             A list of Waypoint objects, to be executed in sequence
+
+        on_start : Task[]
+            An array of Tasks to execute on Mission start
+
+        on_stop : Task[]
+            An array of Tasks to execute on Mission stop. These 
+            Tasks will execute regardless of mission success or failure
 
         onav_config: str
             Configuration parameters for the mission
@@ -45,6 +53,8 @@ class Mission:
         self._name = name
         self._uuid = uuid
         self._waypoints = waypoints
+        self._on_start_tasks = on_start_tasks
+        self._on_stop_tasks = on_stop_tasks
         self._onav_config = onav_config
         self._mission_progress_callback = progress_callback
         self._mission_done_callback = done_callback
@@ -69,6 +79,14 @@ class Mission:
         for waypoint in self._waypoints:
             waypoint_msgs.append(waypoint.getWaypointMsg())
         mission_msg.waypoints = waypoint_msgs
+        on_start_msgs = []
+        for task in self._on_start_tasks:
+            on_start_msgs.append(task.getTaskMsg())
+        mission_msg.on_start = on_start_msgs
+        on_stop_msgs = []
+        for task in self._on_stop_tasks:
+            on_stop_msgs.append(task.getTaskMsg())
+        mission_msg.on_stop = on_stop_msgs
         return mission_msg
 
     def _missionFeedbackCallback(self, feedback):
@@ -260,10 +278,25 @@ class Mission:
         for waypoint in waypoints:
             waypoint_yaml = waypoint.toYaml()
             waypoints_yaml.append(waypoint_yaml)
+
+        on_start_tasks = self._on_start_tasks
+        on_start_tasks_yaml = []
+        for task in on_start_tasks:
+            on_start_task_yaml = task.toYaml()
+            on_start_tasks_yaml.append(on_start_task_yaml)
+
+        on_stop_tasks = self._on_stop_tasks
+        on_stop_tasks_yaml = []
+        for task in on_stop_tasks:
+            on_stop_task_yaml = task.toYaml()
+            on_stop_tasks_yaml.append(on_stop_task_yaml)
+
         mission_yaml = {
             'name': self._name,
             'uuid': self._uuid,
             'waypoints': waypoints_yaml,
+            'on_start_tasks': on_start_tasks_yaml,
+            'on_stop_tasks': on_stop_tasks_yaml,
             'onav_config': self._onav_config
         }
         return mission_yaml
@@ -287,6 +320,12 @@ class Mission:
         if 'waypoints' not in mission_yaml:
             rospy.logerr("yamlFileToMission: missing 'waypoints' field")
             return None
+        if 'on_start_tasks' not in mission_yaml:
+            rospy.logerr("yamlFileToMission: missing 'on_start_tasks' field")
+            return None
+        if 'on_stop_tasks' not in mission_yaml:
+            rospy.logerr("yamlFileToMission: missing 'on_stop_tasks' field")
+            return None
         if 'onav_config' not in mission_yaml:
             rospy.logerr("yamlFileToMission: missing 'onav_config' field")
             return None
@@ -301,4 +340,23 @@ class Mission:
                 rospy.logerr("yamlFileToMission: could not parse 'waypoints'")
                 return None
             waypoints.append(waypoint)
-        return Mission(name, uuid, waypoints, onav_config)
+
+        on_start_tasks = []
+        on_start_tasks_yaml = mission_yaml['on_start_tasks']
+        for on_start_task_yaml in on_start_tasks_yaml:
+            task = Task.fromYaml(on_start_task_yaml)
+            if task is None:
+                rospy.logerr("yamlFileToMission: could not parse 'on_start_tasks'")
+                return None
+            on_start_tasks.append(task)
+
+        on_stop_tasks = []
+        on_stop_tasks_yaml = mission_yaml['on_stop_tasks']
+        for on_stop_task_yaml in on_stop_tasks_yaml:
+            task = Task.fromYaml(on_stop_task_yaml)
+            if task is None:
+                rospy.logerr("yamlFileToMission: could not parse 'on_stop_tasks'")
+                return None
+            on_stop_tasks.append(task)
+
+        return Mission(name, uuid, waypoints, on_start_tasks, on_stop_tasks, onav_config)
