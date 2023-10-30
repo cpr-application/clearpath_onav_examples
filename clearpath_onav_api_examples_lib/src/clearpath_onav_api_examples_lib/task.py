@@ -96,8 +96,8 @@ class Task:
         try:
             name = task_yaml['name']
             uuid = task_yaml['uuid']
-            action_server_name = task_yaml['uuid']
-            version = task_yaml['uuid']
+            action_server_name = task_yaml['action_server_name']
+            version = task_yaml['version']
             floats = task_yaml['floats']
             strings = task_yaml['strings']
             return Task(name, uuid, action_server_name, version, floats, strings)
