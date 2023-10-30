@@ -1,5 +1,6 @@
 import rospy
 import clearpath_navigation_msgs.msg
+from clearpath_onav_api_examples_lib.task import Task
 
 
 class Waypoint:
@@ -33,7 +34,7 @@ class Waypoint:
         heading : float64, optional
             Heading for the waypoint (0-360 degrees)
 
-        tasks : clearpath_navigation_msgs.msg.Task[], optional
+        tasks : Task[], optional
             A list of tasks to run at the waypoint (default is no tasks)
 
         position_tolerance : float64, optional
@@ -128,7 +129,7 @@ class Waypoint:
             tasks_yaml = waypoint_yaml['tasks']
             tasks = []
             for task_yaml in tasks_yaml:
-                task = clearpath_navigation_msgs.msg.Task()
+                task = Task()
                 task.name = task_yaml['name']
                 task.uuid = task_yaml['uuid']
                 task.action_server_name = task_yaml['action_server_name']

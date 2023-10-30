@@ -3,7 +3,7 @@
 
 <img src="clearpath_onav_api_examples/images/clearpath_robotics_transparent_dark.png" alt="Clearpath Logo" width="50%" />&nbsp;
 
-Welcome to the Clearpath Robotics OutdoorNav OutdoorNav examples repository! These examples outline how to use the API to define and execute missions.
+Welcome to the Clearpath Robotics OutdoorNav examples repository! These examples outline how to use the API to define and execute missions.
 
 ## Building the Examples
 
