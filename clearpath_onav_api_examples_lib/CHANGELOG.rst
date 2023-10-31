@@ -2,8 +2,8 @@
 Changelog for package clearpath_onav_api_examples_lib
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2023-10-31)
+------------------
 * Added instructions for generating docs for clearpath_onav_api_examples_lib
 * Review fixes
 * Fix typos

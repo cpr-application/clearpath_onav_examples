@@ -10,7 +10,7 @@ express permission of Clearpath Robotics.
 -->
 <package format="2">
   <name>clearpath_onav_examples</name>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <maintainer email="jmastrangelo@clearpathrobotics.com">Jose Mastrangelo</maintainer>
   <description>Examples to show how to use CPR OutdoorNav API</description>
   <license>BSD</license>
