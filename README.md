@@ -18,7 +18,7 @@ catkin_init_workspace src
 cd src
 git clone https://github.com/cpr-application/clearpath_onav_examples.git cpr_outdoornav
 cd ~/outdoornav_ws
-rosdep install -y --from-paths src --ignore-src
+rosdep install -y --from-paths src --ignore-src -r
 catkin build
 ```
 
@@ -155,3 +155,19 @@ build and run missions via the API? There are several options.
 
     * Once the CSV has been created, import it as a mission. Refer to the
       **mission\_from\_csv\_config** example.
+
+## Using the API Examples Library
+
+In clearpath\_onav\_api\_examples\_lib, there is a python wrapper for the ROS
+API, which makes it easier to get started in building applications. To generate
+HTML documentation for the library using Sphinx:
+
+1. Complete the steps above for Building the Examples.
+
+2. pip install sphinx
+
+3. cd ~/outdoornav\_ws/src/cpr\_outdoornav/clearpath\_onav\_api\_examples\_lib/docs
+
+4. make html
+
+5. Open ~/outdoornav\_ws/src/cpr\_outdoornav/clearpath\_onav\_api\_examples\_lib/docs/\_build/html/index.html in your browser.
