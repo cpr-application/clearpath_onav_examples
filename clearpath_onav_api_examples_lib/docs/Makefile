@@ -18,6 +18,7 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@rm -f "$(SOURCEDIR)"/modules.rst && rm -f "$(SOURCEDIR)"/clearpath_onav_api_examples_lib.rst
+	@mkdir -p "$(SOURCEDIR)"/_static
 	@cd .. && $(SPHINXAPIDOC) -o docs src/clearpath_onav_api_examples_lib/
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	@echo "Now open './_build/html/index.html' in your browser (eg. firefox ./_build/html/index.html &)"
