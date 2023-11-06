@@ -14,7 +14,7 @@ class Mission:
     """A sequence of waypoints with optional tasks."""
 
     def __init__(self, name, uuid, waypoints, on_start_tasks, on_stop_tasks,
-                 from_start=True, start_waypoint_num=0, onav_config="",
+                 from_start, start_waypoint_num, onav_config="",
                  progress_callback=None, done_callback=None):
         """Builds up the data structure containing the details of the mission.
 
