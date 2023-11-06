@@ -14,7 +14,8 @@ class Mission:
     """A sequence of waypoints with optional tasks."""
 
     def __init__(self, name, uuid, waypoints, on_start_tasks, on_stop_tasks,
-                 onav_config="", progress_callback=None, done_callback=None):
+                 from_start=False, start_waypoint_num, onav_config="",
+                 progress_callback=None, done_callback=None):
         """Builds up the data structure containing the details of the mission.
 
         Parameters
@@ -34,6 +35,13 @@ class Mission:
         on_stop : Task[]
             An array of Tasks to execute on Mission stop. These 
             Tasks will execute regardless of mission success or failure
+
+        from_start: bool
+            Whether or not the mission should start from the first Waypoint
+
+        start_waypoint_num: int
+            The index representing the Waypoint in the list of Waypoint, from which the
+            mission should start.
 
         onav_config: str
             Configuration parameters for the mission
@@ -55,6 +63,8 @@ class Mission:
         self._waypoints = waypoints
         self._on_start_tasks = on_start_tasks
         self._on_stop_tasks = on_stop_tasks
+        self._from_start = from_start
+        self._start_waypoint_num = start_waypoint_num
         self._onav_config = onav_config
         self._mission_progress_callback = progress_callback
         self._mission_done_callback = done_callback
@@ -137,6 +147,9 @@ class Mission:
         self._mission_complete = False
         mission_goal_msg = clearpath_navigation_msgs.msg.MissionGoal()
         mission_goal_msg.mission = self._toMissionMsg()
+        mission_goal_msg.from_start = self._from_start
+        if not mission_goal_msg.from_start:
+            mission_goal_msg.start_waypoint = self._waypoints[self._start_waypoint_num]
         try:
             # Waits until the action server has started up and started
             # listening for goals, then sends the goal
