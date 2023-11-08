@@ -50,7 +50,10 @@ class Waypoint:
         self._waypoint_msg.latitude = latitude
         self._waypoint_msg.longitude = longitude
         self._waypoint_msg.heading = heading
-        self._waypoint_msg.tasks = tasks
+        waypoint_tasks = []
+        for task in tasks:
+            waypoint_tasks.append(task.getTaskMsg())
+        self._waypoint_msg.tasks = waypoint_tasks
         self._waypoint_msg.position_tolerance = position_tolerance
         self._waypoint_msg.yaw_tolerance = yaw_tolerance
 
