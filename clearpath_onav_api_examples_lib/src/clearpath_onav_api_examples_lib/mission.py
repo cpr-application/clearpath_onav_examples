@@ -14,7 +14,7 @@ class Mission:
     """A sequence of waypoints with optional tasks."""
 
     def __init__(self, name, uuid, waypoints, on_start_tasks, on_stop_tasks,
-                 from_start, start_waypoint_num, onav_config="",
+                 from_start=True, start_waypoint_num=0, onav_config="",
                  progress_callback=None, done_callback=None):
         """Builds up the data structure containing the details of the mission.
 
@@ -89,14 +89,14 @@ class Mission:
         for waypoint in self._waypoints:
             waypoint_msgs.append(waypoint.getWaypointMsg())
         mission_msg.waypoints = waypoint_msgs
-        on_start_msgs = []
+        on_start_tasks = []
         for task in self._on_start_tasks:
-            on_start_msgs.append(task.getTaskMsg())
-        mission_msg.on_start = on_start_msgs
-        on_stop_msgs = []
+            on_start_tasks.append(task.getTaskMsg())
+        mission_msg.on_start = on_start_tasks
+        on_stop_tasks = []
         for task in self._on_stop_tasks:
-            on_stop_msgs.append(task.getTaskMsg())
-        mission_msg.on_stop = on_stop_msgs
+            on_stop_tasks.append(task.getTaskMsg())
+        mission_msg.on_stop = on_stop_tasks
         return mission_msg
 
     def _missionFeedbackCallback(self, feedback):
