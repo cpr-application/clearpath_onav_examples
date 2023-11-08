@@ -9,27 +9,32 @@ class Task:
     and strings related to the specific Task.
     """
 
-    def __init__(self, name, uuid, action_server_name, version="", floats=[], strings=[]):
+    def __init__(self, name, uuid, action_server_name, version="",
+                 floats=[], strings=[], allow_failure=False):
         """Creates a Waypoint object from the given parameters.
 
         Parameters
         ----------
         name : str
-            The name or ID of the task, used for tracking/reporting
+            The name or ID of the task, used for tracking/reporting.
 
         uuid : str
-            Unique UUID string for the task
+            Unique UUID string for the task.
 
         action_server_name : str
-            The ROS action that this task executes
+            The ROS action that this task executes.
 
         floats : floats[], optional
             Numerical/boolean data to be passed to the action_server_name
-            The exact meaning of these values is dependent on the underlying service
+            The exact meaning of these values is dependent on the underlying service.
 
         strings : str[], optional
             String data to be passed to the action_server_name
-            The exact meaning of these values is dependent on the underlying service
+            The exact meaning of these values is dependent on the underlying service.
+
+        allow_failure : bool
+            Determines whether a mission using this task can continue if the task
+            execution were to fail.
         """
 
         self._task_msg = clearpath_navigation_msgs.msg.Task()
@@ -39,6 +44,7 @@ class Task:
         self._task_msg.version = version
         self._task_msg.floats = floats
         self._task_msg.strings = strings
+        self._task_msg.allow_failure = allow_failure
 
     def getName(self):
         """Gets the name of the task.
@@ -79,7 +85,8 @@ class Task:
                 'action_server_name': task.action_server_name,
                 'version': task.version,
                 'floats': task.floats,
-                'strings': task.strings
+                'strings': task.strings,
+                'allow_failure': task.allow_failure
             })
         return tasks_yaml
 
@@ -100,7 +107,8 @@ class Task:
             version = task_yaml['version']
             floats = task_yaml['floats']
             strings = task_yaml['strings']
-            return Task(name, uuid, action_server_name, version, floats, strings)
+            allow_failure = task_yaml['allow_failure']
+            return Task(name, uuid, action_server_name, version, floats, strings, allow_failure)
 
         except KeyError as e:
             rospy.logerr('Unable to parse yaml for tasks: %s' % e)
