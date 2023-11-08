@@ -2,6 +2,16 @@
 Changelog for package clearpath_onav_api_examples_lib
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix adding tasks to waypoints
+* Added updates to Mission action and Task failure
+* Added from_start and start_waypoint defaults
+* Remove default values for start_waypoint_num and from_start mission argument
+* Added allow_failure to Task class. Fix ordering of defualt parameters of MIsion class
+* Added from_start and start waypoint information to Mission class
+* Contributors: José Mastrangelo
+
 0.0.3 (2023-10-31)
 ------------------
 * Added instructions for generating docs for clearpath_onav_api_examples_lib
