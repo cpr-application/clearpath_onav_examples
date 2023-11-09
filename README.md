@@ -18,8 +18,9 @@ catkin_init_workspace src
 cd src
 git clone https://github.com/cpr-application/clearpath_onav_examples.git cpr_outdoornav
 cd ~/outdoornav_ws
+rosdep update
 rosdep install -y --from-paths src --ignore-src -r
-catkin build
+catkin_make
 ```
 
 ## Running the First Example
